@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Newspaper Auto Generator</title>
+
+<!-- Google Fonts (for Hindi) -->
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;700&family=Noto+Serif+Devanagari:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+body {
+    font-family: 'Noto Sans Devanagari', Arial, sans-serif;
+    background: #eeeeee;
+    margin: 0;
+    padding: 0;
+}
+
+/* Editor Box */
+#generator {
+    width: 90%;
+    max-width: 800px;
+    margin: auto;
+    padding: 20px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+/* Input fields */
+input, textarea {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0;
+    border: 1px solid #aaa;
+    border-radius: 6px;
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 10px;
+    border: none;
+    background: #e53935;
+    color: white;
+    font-size: 18px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #b71c1c;
+}
+
+/* Newspaper Output */
+#newspaper {
+    width: 90%;
+    max-width: 900px;
+    margin: 30px auto;
+    padding: 20px;
+    background: white;
+    border: 3px solid black;
+    font-family: 'Noto Serif Devanagari', serif;
+}
+
+.news-title {
+    font-size: 38px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.news-subtitle {
+    font-size: 22px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.news-image {
+    width: 100%;
+    margin: 15px 0;
+    border-radius: 8px;
+}
+
+.news-content {
+    font-size: 20px;
+    line-height: 1.6;
+    text-align: justify;
+}
+</style>
+
+</head>
+<body>
+
+<!-- INPUT PANEL -->
+<div id="generator">
+    <h2>📰 Auto Newspaper Maker</h2>
+
+    <label>Headline</label>
+    <input type="text" id="headline" placeholder="मुख्य शीर्षक लिखें…" />
+
+    <label>Sub-Headline</label>
+    <input type="text" id="subheadline" placeholder="उप-शीर्षक लिखें…" />
+
+    <label>Full News</label>
+    <textarea id="news" rows="6" placeholder="पूरी खबर यहां लिखें…"></textarea>
+
+    <label>Upload Image</label>
+    <input type="file" id="imageUpload" accept="image/*" />
+
+    <button onclick="generateNews()">Generate Newspaper Page</button>
+</div>
+
+<!-- NEWSPAPER OUTPUT -->
+<div id="newspaper" style="display:none;">
+    <div id="output-title" class="news-title"></div>
+    <div id="output-subtitle" class="news-subtitle"></div>
+    <img id="output-image" class="news-image" />
+    <div id="output-content" class="news-content"></div>
+</div>
+
+<!-- PDF Download Button -->
+<div id="download-section" style="display:none; text-align:center; margin-bottom:40px;">
+    <button onclick="downloadPDF()">Download PDF</button>
+</div>
+
+<!-- LIBRARIES -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<script>
+// Generate Page
+function generateNews() {
+    document.getElementById("output-title").innerText =
+        document.getElementById("headline").value;
+
+    document.getElementById("output-subtitle").innerText =
+        document.getElementById("subheadline").value;
+
+    document.getElementById("output-content").innerText =
+        document.getElementById("news").value;
+
+    const file = document.getElementById("imageUpload").files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = () => {
+            document.getElementById("output-image").src = reader.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    document.getElementById("newspaper").style.display = "block";
+    document.getElementById("download-section").style.display = "block";
+}
+
+// Download PDF Function
+async function downloadPDF() {
+    const newspaper = document.getElementById("newspaper");
+
+    // Convert HTML → Canvas
+    const canvas = await html2canvas(newspaper, { scale: 2 });
+    const imgData = canvas.toDataURL("image/jpeg", 1.0);
+
+    // Create PDF
+    const { jsPDF } = window.jspdf;
+    let pdf = new jsPDF("p", "mm", "a4");
+
+    // A4 dimensions
+    let pageWidth = 210;
+    let pageHeight = 297;
+
+    // Convert canvas size to mm
+    let imgWidth = pageWidth;
+    let imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+    pdf.addImage(imgData, "JPEG", 0, 0, imgWidth, imgHeight);
+
+    // Save
+    pdf.save("newspaper.pdf");
+}
+</script>
+
+</body>
+</html>
